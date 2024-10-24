@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewModels="clr-namespace:CalorieCounter.ViewModels"
+             x:Class="CalorieCounter.Views.UploadPage"
+
+             Title="Image Upload">
+    <StackLayout Padding="20">
+        <Label Text="Select an Image to Upload"
+               FontSize="24"
+               HorizontalOptions="Center" />
+        <Image Source="{Binding ImageSource}"
+               HeightRequest="200"
+               Aspect="AspectFit"
+               HorizontalOptions="Center" />
+        <Button Text="Choose Image"
+                Command="{Binding ChooseImageCommand}" 
+                HorizontalOptions="Center" />
+        <Button Text="Upload Image"
+        Command="{Binding UploadImageCommand}" 
+        HorizontalOptions="Center" />
+
+    </StackLayout>
+</ContentPage>
