@@ -1,0 +1,122 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\makzi\\Documents\\School\\.NET advanced\\Project1\\CalorieCounterAPI\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{0F6261EE-E399-407E-9238-19FB4E846776}|CalorieCounterAPI.csproj|c:\\users\\makzi\\documents\\school\\.net advanced\\project1\\caloriecounterapi\\services\\barcodefinderservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0F6261EE-E399-407E-9238-19FB4E846776}|CalorieCounterAPI.csproj|solutionrelative:services\\barcodefinderservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0F6261EE-E399-407E-9238-19FB4E846776}|CalorieCounterAPI.csproj|c:\\users\\makzi\\documents\\school\\.net advanced\\project1\\caloriecounterapi\\controllers\\imageuploadcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0F6261EE-E399-407E-9238-19FB4E846776}|CalorieCounterAPI.csproj|solutionrelative:controllers\\imageuploadcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0F6261EE-E399-407E-9238-19FB4E846776}|CalorieCounterAPI.csproj|c:\\users\\makzi\\documents\\school\\.net advanced\\project1\\caloriecounterapi\\helpers\\imagehelper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0F6261EE-E399-407E-9238-19FB4E846776}|CalorieCounterAPI.csproj|solutionrelative:helpers\\imagehelper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0F6261EE-E399-407E-9238-19FB4E846776}|CalorieCounterAPI.csproj|c:\\users\\makzi\\documents\\school\\.net advanced\\project1\\caloriecounterapi\\services\\barcodereaderservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0F6261EE-E399-407E-9238-19FB4E846776}|CalorieCounterAPI.csproj|solutionrelative:services\\barcodereaderservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0F6261EE-E399-407E-9238-19FB4E846776}|CalorieCounterAPI.csproj|c:\\users\\makzi\\documents\\school\\.net advanced\\project1\\caloriecounterapi\\services\\openfoodfactsservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0F6261EE-E399-407E-9238-19FB4E846776}|CalorieCounterAPI.csproj|solutionrelative:services\\openfoodfactsservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0F6261EE-E399-407E-9238-19FB4E846776}|CalorieCounterAPI.csproj|c:\\users\\makzi\\documents\\school\\.net advanced\\project1\\caloriecounterapi\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{0F6261EE-E399-407E-9238-19FB4E846776}|CalorieCounterAPI.csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 4,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "ImageUploadController.cs",
+              "DocumentMoniker": "C:\\Users\\makzi\\Documents\\School\\.NET advanced\\Project1\\CalorieCounterAPI\\Controllers\\ImageUploadController.cs",
+              "RelativeDocumentMoniker": "Controllers\\ImageUploadController.cs",
+              "ToolTip": "C:\\Users\\makzi\\Documents\\School\\.NET advanced\\Project1\\CalorieCounterAPI\\Controllers\\ImageUploadController.cs",
+              "RelativeToolTip": "Controllers\\ImageUploadController.cs",
+              "ViewState": "AgIAABYAAAAAAAAAAAAgwCMAAAAMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-24T21:23:29.351Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "ImageHelper.cs",
+              "DocumentMoniker": "C:\\Users\\makzi\\Documents\\School\\.NET advanced\\Project1\\CalorieCounterAPI\\Helpers\\ImageHelper.cs",
+              "RelativeDocumentMoniker": "Helpers\\ImageHelper.cs",
+              "ToolTip": "C:\\Users\\makzi\\Documents\\School\\.NET advanced\\Project1\\CalorieCounterAPI\\Helpers\\ImageHelper.cs",
+              "RelativeToolTip": "Helpers\\ImageHelper.cs",
+              "ViewState": "AgIAAB4AAAAAAAAAAAAowBEAAABRAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-24T22:05:02.668Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\makzi\\Documents\\School\\.NET advanced\\Project1\\CalorieCounterAPI\\appsettings.json",
+              "RelativeDocumentMoniker": "appsettings.json",
+              "ToolTip": "C:\\Users\\makzi\\Documents\\School\\.NET advanced\\Project1\\CalorieCounterAPI\\appsettings.json",
+              "RelativeToolTip": "appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2024-10-24T22:04:33.954Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "BarcodeReaderService.cs",
+              "DocumentMoniker": "C:\\Users\\makzi\\Documents\\School\\.NET advanced\\Project1\\CalorieCounterAPI\\Services\\BarcodeReaderService.cs",
+              "RelativeDocumentMoniker": "Services\\BarcodeReaderService.cs",
+              "ToolTip": "C:\\Users\\makzi\\Documents\\School\\.NET advanced\\Project1\\CalorieCounterAPI\\Services\\BarcodeReaderService.cs",
+              "RelativeToolTip": "Services\\BarcodeReaderService.cs",
+              "ViewState": "AgIAAA4AAAAAAAAAAAAwwAUAAAAbAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-24T20:33:18.099Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "BarcodeFinderService.cs",
+              "DocumentMoniker": "C:\\Users\\makzi\\Documents\\School\\.NET advanced\\Project1\\CalorieCounterAPI\\Services\\BarcodeFinderService.cs",
+              "RelativeDocumentMoniker": "Services\\BarcodeFinderService.cs",
+              "ToolTip": "C:\\Users\\makzi\\Documents\\School\\.NET advanced\\Project1\\CalorieCounterAPI\\Services\\BarcodeFinderService.cs",
+              "RelativeToolTip": "Services\\BarcodeFinderService.cs",
+              "ViewState": "AgIAAD8AAAAAAAAAAAAQwGsAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-24T20:31:53.769Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "OpenFoodFactsService.cs",
+              "DocumentMoniker": "C:\\Users\\makzi\\Documents\\School\\.NET advanced\\Project1\\CalorieCounterAPI\\Services\\OpenFoodFactsService.cs",
+              "RelativeDocumentMoniker": "Services\\OpenFoodFactsService.cs",
+              "ToolTip": "C:\\Users\\makzi\\Documents\\School\\.NET advanced\\Project1\\CalorieCounterAPI\\Services\\OpenFoodFactsService.cs",
+              "RelativeToolTip": "Services\\OpenFoodFactsService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-24T20:29:35.771Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
