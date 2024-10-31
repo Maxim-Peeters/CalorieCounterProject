@@ -21,9 +21,9 @@ namespace CalorieCounterAPI.Services
 
                 var json = JObject.Parse(responseBody);
                 string productName = json["product"]?["product_name"]?.ToString();
-                var nutriments = json["product"]?["nutriments"];
+                double calories = json["product"]?["nutriments"]?["energy-kcal_100g"]?.ToObject<double?>() ?? 0;
 
-                return $"Product: {productName}\nNutriments: {nutriments}";
+                return $"{productName};{calories}";
             }
             catch (HttpRequestException e)
             {

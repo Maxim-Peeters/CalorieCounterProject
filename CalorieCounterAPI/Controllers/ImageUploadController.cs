@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Diagnostics;
 using CalorieCounter.Services;
-using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models; // Ensure this is added
+using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
 
 namespace CalorieCounterAPI.Controllers
 {
@@ -32,7 +32,6 @@ namespace CalorieCounterAPI.Controllers
             string croppedImagePath = Path.Combine(Path.GetTempPath(), "cropped.png");
             Debug.WriteLine($"UploadImage: Processing image to get barcode region from: {tempPath}");
 
-            // Step 1: Detect and crop barcode
             bool cropSuccess = await BarcodeFinderService.ProcessImageAndGetBarcodeAsync(tempPath, croppedImagePath);
 
             if (!cropSuccess)
@@ -41,7 +40,6 @@ namespace CalorieCounterAPI.Controllers
                 return NotFound("No barcode detected or failed to crop");
             }
 
-            // Step 2: Read the barcode from the cropped image
             var readResult = await BarcodeReaderService.AnalyzeImageOCR(croppedImagePath);
 
             if (readResult == null)
@@ -50,7 +48,6 @@ namespace CalorieCounterAPI.Controllers
                 return NotFound("No readable barcode text found");
             }
 
-            // Extract the detected text
             string detectedBarcode = ExtractBarcodeText(readResult);
 
             if (string.IsNullOrEmpty(detectedBarcode))
@@ -72,7 +69,6 @@ namespace CalorieCounterAPI.Controllers
             return Ok(productInfo);
         }
 
-        // Helper method to extract readable text from OCR result
         private string ExtractBarcodeText(ReadResult readResult)
         {
             return string.Join("", readResult.Lines.SelectMany(line => line.Words).Select(word => word.Text));

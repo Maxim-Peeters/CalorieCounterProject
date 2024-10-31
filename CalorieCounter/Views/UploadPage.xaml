@@ -3,7 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:viewModels="clr-namespace:CalorieCounter.ViewModels"
              x:Class="CalorieCounter.Views.UploadPage"
-
              Title="Image Upload">
     <StackLayout Padding="20">
         <Label Text="Select an Image to Upload"
@@ -17,8 +16,11 @@
                 Command="{Binding ChooseImageCommand}" 
                 HorizontalOptions="Center" />
         <Button Text="Upload Image"
-        Command="{Binding UploadImageCommand}" 
-        HorizontalOptions="Center" />
-
+                Command="{Binding UploadImageCommand}" 
+                HorizontalOptions="Center" />
+        <Label Text="{Binding DailyCalories, StringFormat='Total Daily Calories: {0:F0}'}"
+       FontSize="18"
+       HorizontalOptions="Center"
+       VerticalOptions="EndAndExpand" />
     </StackLayout>
 </ContentPage>
