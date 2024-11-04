@@ -41,33 +41,57 @@ namespace CalorieCounter.ViewModels
         {
             try
             {
-                var result = await FilePicker.PickAsync(new PickOptions
-                {
-                    PickerTitle = "Please select an image",
-                    FileTypes = FilePickerFileType.Images
-                });
+                // Prompt the user to choose between taking a photo or selecting from the gallery
+                string action = await Application.Current.MainPage.DisplayActionSheet(
+                    "Choose Image Source",
+                    "Cancel",
+                    null,
+                    "Take Photo",
+                    "Choose from Gallery"
+                );
 
-                if (result != null)
+                if (action == "Cancel")
                 {
-                    string tempFilePath;
+                    return; // Exit if user cancels
+                }
 
-                    // For mobile platforms, read the file stream into a temporary file
-                    if (DeviceInfo.Platform == DevicePlatform.iOS || DeviceInfo.Platform == DevicePlatform.Android)
+                string tempFilePath = null;
+
+                if (action == "Take Photo")
+                {
+                    // Use MediaPicker to take a new photo (supported on both mobile and Windows)
+                    var photoResult = await MediaPicker.CapturePhotoAsync();
+                    if (photoResult != null)
                     {
-                        tempFilePath = Path.Combine(FileSystem.CacheDirectory, result.FileName);
+                        tempFilePath = await SaveToTempFileAsync(photoResult);
+                    }
+                }
+                else if (action == "Choose from Gallery")
+                {
+                    // Use FilePicker to choose an image from the gallery
+                    var result = await FilePicker.PickAsync(new PickOptions
+                    {
+                        PickerTitle = "Please select an image",
+                        FileTypes = FilePickerFileType.Images
+                    });
 
-                        using (var stream = await result.OpenReadAsync())
-                        using (var tempFile = File.Create(tempFilePath))
+                    if (result != null)
+                    {
+                        if (DeviceInfo.Platform == DevicePlatform.iOS || DeviceInfo.Platform == DevicePlatform.Android)
                         {
-                            await stream.CopyToAsync(tempFile);
+                            // Save to cache directory on mobile platforms
+                            tempFilePath = await SaveToTempFileAsync(result);
+                        }
+                        else
+                        {
+                            // Use the file path directly on Windows
+                            tempFilePath = result.FullPath;
                         }
                     }
-                    else
-                    {
-                        // For Windows, use the file path directly
-                        tempFilePath = result.FullPath;
-                    }
+                }
 
+                if (!string.IsNullOrEmpty(tempFilePath))
+                {
                     Debug.WriteLine($"Selected file path: {tempFilePath}");
                     ImageSource = tempFilePath;
                 }
@@ -78,6 +102,20 @@ namespace CalorieCounter.ViewModels
                 await Application.Current.MainPage.DisplayAlert("Error", "Failed to select image: " + ex.Message, "OK");
             }
         }
+
+        private async Task<string> SaveToTempFileAsync(FileResult fileResult)
+        {
+            string tempFilePath = Path.Combine(FileSystem.CacheDirectory, fileResult.FileName);
+
+            using (var stream = await fileResult.OpenReadAsync())
+            using (var tempFile = File.Create(tempFilePath))
+            {
+                await stream.CopyToAsync(tempFile);
+            }
+
+            return tempFilePath;
+        }
+
 
         private async Task UploadImageAsync()
         {

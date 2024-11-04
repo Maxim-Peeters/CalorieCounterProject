@@ -4,23 +4,33 @@
              xmlns:viewModels="clr-namespace:CalorieCounter.ViewModels"
              x:Class="CalorieCounter.Views.UploadPage"
              Title="Image Upload">
-    <StackLayout Padding="20">
+
+    <!-- Set the ViewModel as the BindingContext for this page -->
+    <ContentPage.BindingContext>
+        <viewModels:UploadViewModel />
+    </ContentPage.BindingContext>
+
+    <StackLayout Padding="20" Spacing="15">
         <Label Text="Select an Image to Upload"
                FontSize="24"
                HorizontalOptions="Center" />
+
         <Image Source="{Binding ImageSource}"
                HeightRequest="200"
                Aspect="AspectFit"
                HorizontalOptions="Center" />
+
         <Button Text="Choose Image"
                 Command="{Binding ChooseImageCommand}" 
                 HorizontalOptions="Center" />
+
         <Button Text="Upload Image"
                 Command="{Binding UploadImageCommand}" 
                 HorizontalOptions="Center" />
+
         <Label Text="{Binding DailyCalories, StringFormat='Total Daily Calories: {0:F0}'}"
-       FontSize="18"
-       HorizontalOptions="Center"
-       VerticalOptions="EndAndExpand" />
+               FontSize="18"
+               HorizontalOptions="Center"
+               VerticalOptions="EndAndExpand" />
     </StackLayout>
 </ContentPage>
