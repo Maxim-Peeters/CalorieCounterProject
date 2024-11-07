@@ -1,5 +1,6 @@
 ﻿using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -26,15 +27,13 @@ namespace CalorieCounterAPI.Services
             return client;
         }
 
-        private static async Task<ReadResult> ProcessFile(ComputerVisionClient client, string pathToFile)
+        private static async Task<ReadResult?> ProcessFileAsync(ComputerVisionClient client, Stream imageStream)
         {
             try
             {
-                using var stream = File.OpenRead(pathToFile);
-
-                // Use the current SDK method signature
+                // Start the OCR read operation on the image stream
                 var textHeaders = await client.ReadInStreamAsync(
-                    stream,
+                    imageStream,
                     language: "en"  // Optional: specify language if known
                 );
 
@@ -45,11 +44,12 @@ namespace CalorieCounterAPI.Services
                 do
                 {
                     results = await client.GetReadResultAsync(Guid.Parse(operationId));
-                    await Task.Delay(1000); // Use Task.Delay instead of Thread.Sleep
+                    await Task.Delay(1000); // Wait for OCR operation to complete
                 } while (results.Status == OperationStatusCodes.Running ||
-                        results.Status == OperationStatusCodes.NotStarted);
+                         results.Status == OperationStatusCodes.NotStarted);
 
-                return results.AnalyzeResult.ReadResults.FirstOrDefault();
+                // Return the first result if it exists
+                return results.AnalyzeResult?.ReadResults.FirstOrDefault();
             }
             catch (ComputerVisionOcrErrorException ex)
             {
@@ -58,10 +58,24 @@ namespace CalorieCounterAPI.Services
             }
         }
 
-        public static async Task<ReadResult> AnalyzeImageOCR(string outputCroppedPath)
+        public static async Task<string> AnalyzeImageOCRAsync(Stream croppedImageStream)
         {
             using var client = CreateAuthorizedClient();
-            return await ProcessFile(client, outputCroppedPath);
+            var readResult = await ProcessFileAsync(client, croppedImageStream);
+
+            if (readResult != null)
+            {
+                // Extract lines of text and concatenate them
+                var barcodeText = string.Join(" ",
+                    readResult.Lines.Select(line => line.Text));
+
+                // Post-process the text to extract only numeric barcode information
+                var barcodeNumber = new string(barcodeText.Where(char.IsDigit).ToArray());
+
+                return barcodeNumber;
+            }
+
+            return string.Empty; // Return empty if no readable text found
         }
     }
 }

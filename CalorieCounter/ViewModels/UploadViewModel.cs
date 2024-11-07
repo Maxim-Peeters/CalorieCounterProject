@@ -1,172 +1,124 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls;
-using CalorieCounter.Services;
-using System.Diagnostics;
+﻿using System;
+using System.ComponentModel;
 using System.IO;
+using System.Net.Http;
+using System.Threading.Tasks;
+using System.Windows.Input;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Storage;
+using CalorieCounter.Services; // Added for barcode and OpenFoodFacts services
+using CalorieCounterAPI.Services;
 
 namespace CalorieCounter.ViewModels
 {
-    public partial class UploadViewModel : ObservableObject
+    public class UploadViewModel : INotifyPropertyChanged
     {
-        private string _imageSource;
+        private ImageSource _imageSource;
         private double _dailyCalories;
-        private readonly ImageUploadService _imageUploadService;
+        private readonly HttpClient _httpClient;
 
-        public string ImageSource
+        public UploadViewModel()
+        {
+            _httpClient = new HttpClient();
+            ChooseImageCommand = new Command(async () => await ChooseImageAsync());
+            UploadImageCommand = new Command(async () => await UploadImageAsync());
+        }
+
+        public ImageSource ImageSource
         {
             get => _imageSource;
-            set => SetProperty(ref _imageSource, value);
+            set
+            {
+                _imageSource = value;
+                OnPropertyChanged(nameof(ImageSource));
+            }
         }
 
         public double DailyCalories
         {
             get => _dailyCalories;
-            set => SetProperty(ref _dailyCalories, value);
+            set
+            {
+                _dailyCalories = value;
+                OnPropertyChanged(nameof(DailyCalories));
+            }
         }
 
-        public UploadViewModel()
-        {
-            _imageUploadService = new ImageUploadService();
-            ChooseImageCommand = new AsyncRelayCommand(ChooseImageAsync);
-            UploadImageCommand = new AsyncRelayCommand(UploadImageAsync);
-            DailyCalories = 0; // Initialize daily calorie count
-        }
-
-        public IAsyncRelayCommand ChooseImageCommand { get; }
-        public IAsyncRelayCommand UploadImageCommand { get; }
+        public ICommand ChooseImageCommand { get; }
+        public ICommand UploadImageCommand { get; }
 
         private async Task ChooseImageAsync()
         {
             try
             {
-                // Prompt the user to choose between taking a photo or selecting from the gallery
-                string action = await Application.Current.MainPage.DisplayActionSheet(
-                    "Choose Image Source",
-                    "Cancel",
-                    null,
-                    "Take Photo",
-                    "Choose from Gallery"
-                );
-
-                if (action == "Cancel")
+                var result = await FilePicker.PickAsync(new PickOptions
                 {
-                    return; // Exit if user cancels
-                }
+                    FileTypes = FilePickerFileType.Images,
+                    PickerTitle = "Select an Image"
+                });
 
-                string tempFilePath = null;
-
-                if (action == "Take Photo")
+                if (result != null)
                 {
-                    // Use MediaPicker to take a new photo (supported on both mobile and Windows)
-                    var photoResult = await MediaPicker.CapturePhotoAsync();
-                    if (photoResult != null)
-                    {
-                        tempFilePath = await SaveToTempFileAsync(photoResult);
-                    }
-                }
-                else if (action == "Choose from Gallery")
-                {
-                    // Use FilePicker to choose an image from the gallery
-                    var result = await FilePicker.PickAsync(new PickOptions
-                    {
-                        PickerTitle = "Please select an image",
-                        FileTypes = FilePickerFileType.Images
-                    });
-
-                    if (result != null)
-                    {
-                        if (DeviceInfo.Platform == DevicePlatform.iOS || DeviceInfo.Platform == DevicePlatform.Android)
-                        {
-                            // Save to cache directory on mobile platforms
-                            tempFilePath = await SaveToTempFileAsync(result);
-                        }
-                        else
-                        {
-                            // Use the file path directly on Windows
-                            tempFilePath = result.FullPath;
-                        }
-                    }
-                }
-
-                if (!string.IsNullOrEmpty(tempFilePath))
-                {
-                    Debug.WriteLine($"Selected file path: {tempFilePath}");
-                    ImageSource = tempFilePath;
+                    // Open the stream for the selected image
+                    var stream = await result.OpenReadAsync();
+                    // Set the image source to display the selected image
+                    ImageSource = ImageSource.FromStream(() => stream);
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error choosing image: {ex}");
-                await Application.Current.MainPage.DisplayAlert("Error", "Failed to select image: " + ex.Message, "OK");
+                Console.WriteLine($"Image selection failed: {ex.Message}");
             }
         }
-
-        private async Task<string> SaveToTempFileAsync(FileResult fileResult)
-        {
-            string tempFilePath = Path.Combine(FileSystem.CacheDirectory, fileResult.FileName);
-
-            using (var stream = await fileResult.OpenReadAsync())
-            using (var tempFile = File.Create(tempFilePath))
-            {
-                await stream.CopyToAsync(tempFile);
-            }
-
-            return tempFilePath;
-        }
-
 
         private async Task UploadImageAsync()
         {
-            if (string.IsNullOrEmpty(ImageSource))
-            {
-                await Application.Current.MainPage.DisplayAlert("Warning", "Please select an image to upload.", "OK");
-                return;
-            }
-
             try
             {
-                Debug.WriteLine($"UploadImageAsync: Uploading image from path: {ImageSource}");
-                var (success, error, body) = await _imageUploadService.UploadImageAsync(ImageSource);
-
-                if (success)
+                // Get the stream from the selected image
+                var stream = ((StreamImageSource)ImageSource)?.Stream?.Invoke(new System.Threading.CancellationToken()).Result;
+                if (stream == null)
                 {
-                    // Parse the response
-                    string[] parts = body.Split(';');
-                    string productName = parts[0];
-                    double calories = double.Parse(parts[1]);
+                    Console.WriteLine("No image selected for upload.");
+                    return;
+                }
 
-                    // Prompt for grams
-                    var gramsInput = await Application.Current.MainPage.DisplayPromptAsync(
-                        $"{productName} | {calories} kcal per 100g ",
-                        "Enter Grams",
-                        "Add",
-                        initialValue: "100", // Default value
-                        maxLength: 5,
-                        keyboard: Keyboard.Numeric
-                    );
+                // Process the image to extract barcode (this will crop and use OCR to read text)
+                string barcode = await BarcodeReaderService.AnalyzeImageOCRAsync(stream);
 
-                    if (double.TryParse(gramsInput, out double grams) && grams > 0)
+                if (!string.IsNullOrEmpty(barcode))
+                {
+                    Console.WriteLine($"Barcode detected: {barcode}");
+
+                    // Now fetch product information from OpenFoodFacts API
+                    string productInfo = await OpenFoodFactsService.GetProductInfoByBarcode(barcode);
+                    if (!string.IsNullOrEmpty(productInfo))
                     {
-                        DailyCalories += calories * (grams / 100);
-                        await Application.Current.MainPage.DisplayAlert("Success", $"Calories added: {calories * (grams / 100)}", "OK");
+                        var productDetails = productInfo.Split(';');
+                        var calories = Convert.ToDouble(productDetails[1]);
+                        DailyCalories = calories;  // Set the received calorie count
                     }
                     else
                     {
-                        await Application.Current.MainPage.DisplayAlert("Warning", "Please enter a valid amount in grams.", "OK");
+                        Console.WriteLine("Product information not found.");
                     }
                 }
                 else
                 {
-                    await Application.Current.MainPage.DisplayAlert("Error", $"Upload failed: {error}", "OK");
+                    Console.WriteLine("No barcode detected in the image.");
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"UploadImageAsync: Error in UploadImageAsync: {ex}");
-                await Application.Current.MainPage.DisplayAlert("Error", "An unexpected error occurred: " + ex.Message, "OK");
+                Console.WriteLine($"Image upload or analysis failed: {ex.Message}");
             }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

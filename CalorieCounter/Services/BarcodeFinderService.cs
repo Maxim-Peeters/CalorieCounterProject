@@ -1,5 +1,5 @@
-﻿using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction.Models;
-using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction;
+﻿using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction;
+using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction.Models;
 using System;
 using System.IO;
 using System.Linq;
@@ -20,19 +20,16 @@ namespace CalorieCounter.Services
     {
         public static double MinProbability => 0.9;
 
-        public static async Task<bool> ProcessImageAndGetBarcodeAsync(string inputImagePath, string outputCroppedPath)
+        public static async Task<bool> ProcessImageAndGetBarcodeAsync(Stream photoStream, string outputCroppedPath)
         {
             try
             {
-                using (var fileStream = new FileStream(inputImagePath, FileMode.Open))
-                {
-                    var prediction = await DetectObjectAsync(fileStream);
+                var prediction = await DetectObjectAsync(photoStream);
 
-                    if (prediction != null && prediction.Probability > MinProbability)
-                    {
-                        ImageHelper.CropBoundingBox(inputImagePath, prediction.BoundingBox, outputCroppedPath);
-                        return true;
-                    }
+                if (prediction != null && prediction.Probability > MinProbability)
+                {
+                    ImageHelper.CropBoundingBox(photoStream, prediction.BoundingBox, outputCroppedPath);
+                    return true;
                 }
                 return false;
             }
@@ -43,21 +40,11 @@ namespace CalorieCounter.Services
             }
             finally
             {
-                if (File.Exists(inputImagePath))
-                {
-                    try
-                    {
-                        File.Delete(inputImagePath);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Error deleting temporary file: {ex.Message}");
-                    }
-                }
+                photoStream.Dispose();
             }
         }
 
-        private static async Task<PredictionModel> DetectObjectAsync(Stream photoStream)
+        private static async Task<PredictionModel?> DetectObjectAsync(Stream photoStream)
         {
             try
             {
@@ -66,7 +53,9 @@ namespace CalorieCounter.Services
                     Endpoint = ApiKeysFinder.CustomVisionEndPoint
                 };
 
+                // Reset stream position before reading
                 photoStream.Position = 0;
+
                 var results = await endpoint.DetectImageAsync(
                     Guid.Parse(ApiKeysFinder.ProjectId),
                     ApiKeysFinder.PublishedName,

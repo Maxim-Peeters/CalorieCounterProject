@@ -1,4 +1,5 @@
 ﻿using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction.Models;
+using System;
 using System.Drawing;
 using System.IO;
 
@@ -6,17 +7,18 @@ namespace CalorieCounter.Helpers
 {
     public class ImageHelper
     {
-        public static void CropBoundingBox(string inputPath, BoundingBox boundingBox, string outputPath)
+        public static void CropBoundingBox(Stream inputStream, BoundingBox boundingBox, string outputPath)
         {
-            using (var stream = File.Open(inputPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            inputStream.Position = 0; // Reset stream position in case it's been used before
+            using (Bitmap src = new Bitmap(inputStream)) // Load the Bitmap from the stream
             {
-                Bitmap src = System.Drawing.Image.FromStream(stream) as Bitmap;
-
                 Rectangle cropRectangle = GetRectangle(boundingBox, src.Width, src.Height);
                 EnsureWidthAndHeight(src, ref cropRectangle);
 
-                Bitmap croppedBitmap = src.Clone(cropRectangle, src.PixelFormat);
-                croppedBitmap.Save(outputPath, System.Drawing.Imaging.ImageFormat.Png);
+                using (Bitmap croppedBitmap = src.Clone(cropRectangle, src.PixelFormat))
+                {
+                    croppedBitmap.Save(outputPath, System.Drawing.Imaging.ImageFormat.Png);
+                }
             }
         }
 
