@@ -8,7 +8,7 @@ namespace CalorieCounter.Views
         public UploadPage(UploadViewModel viewModel)
         {
             InitializeComponent();
-            BindingContext = viewModel;
+            BindingContext = viewModel;  // Use the passed-in viewModel instance
         }
     }
 }

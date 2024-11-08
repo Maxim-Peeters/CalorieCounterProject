@@ -5,7 +5,6 @@
              x:Class="CalorieCounter.Views.UploadPage"
              Title="Image Upload">
 
-    <!-- Set the ViewModel as the BindingContext for this page -->
     <ContentPage.BindingContext>
         <viewModels:UploadViewModel />
     </ContentPage.BindingContext>
@@ -15,7 +14,8 @@
                FontSize="24"
                HorizontalOptions="Center" />
 
-        <Image Source="{Binding ImageSource}"
+        <!-- Correct binding for SelectedImageSource -->
+        <Image Source="{Binding SelectedImageSource}"
                HeightRequest="200"
                Aspect="AspectFit"
                HorizontalOptions="Center" />

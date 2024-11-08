@@ -1,124 +1,125 @@
-﻿using System;
-using System.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Microsoft.Maui.Controls;
 using System.IO;
-using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Storage;
-using CalorieCounter.Services; // Added for barcode and OpenFoodFacts services
-using CalorieCounterAPI.Services;
+using CalorieCounter.Services;
+using CalorieCounter.Helpers;
+using System;
 
 namespace CalorieCounter.ViewModels
 {
-    public class UploadViewModel : INotifyPropertyChanged
+    public class UploadViewModel : ObservableObject
     {
-        private ImageSource _imageSource;
-        private double _dailyCalories;
-        private readonly HttpClient _httpClient;
-
-        public UploadViewModel()
+        private bool isRunning = false;
+        public bool IsRunning
         {
-            _httpClient = new HttpClient();
-            ChooseImageCommand = new Command(async () => await ChooseImageAsync());
-            UploadImageCommand = new Command(async () => await UploadImageAsync());
+            get => isRunning;
+            set => SetProperty(ref isRunning, value);
         }
 
-        public ImageSource ImageSource
+        private ImageSource selectedImageSource;
+        public ImageSource SelectedImageSource
         {
-            get => _imageSource;
-            set
-            {
-                _imageSource = value;
-                OnPropertyChanged(nameof(ImageSource));
-            }
+            get => selectedImageSource;
+            set => SetProperty(ref selectedImageSource, value);
         }
 
-        public double DailyCalories
+        private string dailyCalories;
+        public string DailyCalories
         {
-            get => _dailyCalories;
-            set
-            {
-                _dailyCalories = value;
-                OnPropertyChanged(nameof(DailyCalories));
-            }
+            get => dailyCalories;
+            set => SetProperty(ref dailyCalories, value);
         }
 
         public ICommand ChooseImageCommand { get; }
         public ICommand UploadImageCommand { get; }
 
-        private async Task ChooseImageAsync()
+        public UploadViewModel()
         {
-            try
-            {
-                var result = await FilePicker.PickAsync(new PickOptions
-                {
-                    FileTypes = FilePickerFileType.Images,
-                    PickerTitle = "Select an Image"
-                });
+            ChooseImageCommand = new AsyncRelayCommand(PickImageAsync);
+            UploadImageCommand = new AsyncRelayCommand(UploadImageAsync);
+        }
 
-                if (result != null)
-                {
-                    // Open the stream for the selected image
-                    var stream = await result.OpenReadAsync();
-                    // Set the image source to display the selected image
-                    ImageSource = ImageSource.FromStream(() => stream);
-                }
-            }
-            catch (Exception ex)
+        // Step 1: Pick the image from the gallery
+        private async Task PickImageAsync()
+        {
+            // Open image picker to choose a photo
+            var fileResult = await MediaPicker.Default.PickPhotoAsync();
+            if (fileResult != null)
             {
-                Console.WriteLine($"Image selection failed: {ex.Message}");
+                // Open the image as a stream for processing
+                var photoStream = await fileResult.OpenReadAsync();
+
+                // Bind the photo stream to the UI for display
+                SelectedImageSource = ImageSource.FromStream(() => photoStream);
             }
         }
 
+        // Step 2: Upload and process the image for barcode scanning
         private async Task UploadImageAsync()
         {
-            try
+            if (SelectedImageSource != null)
             {
-                // Get the stream from the selected image
-                var stream = ((StreamImageSource)ImageSource)?.Stream?.Invoke(new System.Threading.CancellationToken()).Result;
-                if (stream == null)
+                IsRunning = true;
+
+                try
                 {
-                    Console.WriteLine("No image selected for upload.");
-                    return;
-                }
-
-                // Process the image to extract barcode (this will crop and use OCR to read text)
-                string barcode = await BarcodeReaderService.AnalyzeImageOCRAsync(stream);
-
-                if (!string.IsNullOrEmpty(barcode))
-                {
-                    Console.WriteLine($"Barcode detected: {barcode}");
-
-                    // Now fetch product information from OpenFoodFacts API
-                    string productInfo = await OpenFoodFactsService.GetProductInfoByBarcode(barcode);
-                    if (!string.IsNullOrEmpty(productInfo))
+                    // Ensure we have a file result for the selected image
+                    var fileResult = await MediaPicker.Default.PickPhotoAsync();
+                    if (fileResult == null)
                     {
-                        var productDetails = productInfo.Split(';');
-                        var calories = Convert.ToDouble(productDetails[1]);
-                        DailyCalories = calories;  // Set the received calorie count
+                        DailyCalories = "No image selected.";
+                        return;
+                    }
+
+                    // Open the photo stream for further processing
+                    var photoStream = await fileResult.OpenReadAsync();
+
+                    // Step 1: Process image using BarcodeFinderService
+                    var outputCroppedPath = Path.Combine(FileSystem.CacheDirectory, "croppedImage.png");
+                    var isBarcodeFound = await BarcodeFinderService.ProcessImageAndGetBarcodeAsync(photoStream, outputCroppedPath);
+
+                    if (isBarcodeFound)
+                    {
+                        // Step 2: Extract barcode number using BarcodeReaderService
+                        var barcodeNumber = await BarcodeReaderService.AnalyzeImageOCRAsync(photoStream);
+                        if (!string.IsNullOrEmpty(barcodeNumber))
+                        {
+                            // Step 3: Get product info from OpenFoodFactsService
+                            var productInfo = await OpenFoodFactsService.GetProductInfoByBarcode(barcodeNumber);
+
+                            if (productInfo != null)
+                            {
+                                // Parse and display calories from the product
+                                var parts = productInfo.Split(';');
+                                DailyCalories = $"Product: {parts[0]}, Calories: {parts[1]} kcal";
+                            }
+                            else
+                            {
+                                DailyCalories = "Product not found or invalid barcode.";
+                            }
+                        }
+                        else
+                        {
+                            DailyCalories = "No barcode detected.";
+                        }
                     }
                     else
                     {
-                        Console.WriteLine("Product information not found.");
+                        DailyCalories = "No barcode found in the image.";
                     }
                 }
-                else
+                catch (Exception ex)
                 {
-                    Console.WriteLine("No barcode detected in the image.");
+                    DailyCalories = $"Error: {ex.Message}";
+                }
+                finally
+                {
+                    IsRunning = false;
                 }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Image upload or analysis failed: {ex.Message}");
-            }
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected virtual void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }
