@@ -16,7 +16,7 @@ namespace CalorieCounterAPI.API.Controllers
             _unitOfWork = unitOfWork;
         }
 
-        // GET: api/Products
+        // GET: api/Calories
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Day>>> GetProductsPerDay()
         {
@@ -31,7 +31,7 @@ namespace CalorieCounterAPI.API.Controllers
             return Ok(products);
         }
 
-        // GET: api/Products/5
+        // GET: api/Calories/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Product>> GetProduct(int id)
         {
@@ -45,7 +45,7 @@ namespace CalorieCounterAPI.API.Controllers
             return Ok(product);
         }
 
-        // POST: api/Products
+        // POST: api/Calories
         [HttpPost]
         public async Task<ActionResult<Product>> PostProduct(Product product)
         {
@@ -76,6 +76,7 @@ namespace CalorieCounterAPI.API.Controllers
             return CreatedAtAction("GetProduct", new { id = product.ProductId }, product);
         }
 
+        // PUT: api/Calories/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutProduct(int id, Product product)
         {
@@ -92,16 +93,19 @@ namespace CalorieCounterAPI.API.Controllers
                 return NotFound();
             }
 
-            // Now update the product with the new one
+            existingProduct.Name = product.Name;
+            existingProduct.CaloriesPer100g = product.CaloriesPer100g;
+            existingProduct.AmountInGrams = product.AmountInGrams;
+            existingProduct.Barcode = product.Barcode;
+            existingProduct.Category = product.Category;
+
             await _unitOfWork.ProductRepository.UpdateAsync(existingProduct);
             await _unitOfWork.SaveAsync();
 
             return NoContent();  // 204 No Content to indicate successful update
         }
 
-
-
-        // DELETE: api/Products/5
+        // DELETE: api/Calories/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProduct(int id)
         {
