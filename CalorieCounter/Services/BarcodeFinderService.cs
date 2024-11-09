@@ -20,22 +20,30 @@ namespace CalorieCounter.Services
     {
         public static double MinProbability => 0.9;
 
-        public static async Task<bool> ProcessImageAndGetBarcodeAsync(Stream photoStream, string outputCroppedPath)
+        // Modify the method to accept file path instead of Stream
+        public static async Task<string?> ProcessImageAndGetBarcodeAsync(string photoPath)
         {
             try
             {
-                // Ensure the stream position is set to the beginning before processing
-                photoStream.Position = 0;
+                // Ensure the file exists before processing
+                if (!File.Exists(photoPath))
+                    throw new FileNotFoundException($"File not found: {photoPath}");
 
-                var prediction = await DetectObjectAsync(photoStream);
+                // Get the prediction from the model
+                var prediction = await DetectObjectAsync(photoPath);
                 if (prediction != null && prediction.Probability > MinProbability)
                 {
-                    // Reset position again before cropping
-                    photoStream.Position = 0;
-                    ImageHelper.CropBoundingBox(photoStream, prediction.BoundingBox, outputCroppedPath);
-                    return true;
+                    // Create a temporary file to save the cropped image
+                    string tempOutputPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + "_cropped.png");
+
+                    // Use ImageHelper to crop the bounding box
+                    ImageHelper.CropBoundingBox(photoPath, prediction.BoundingBox, tempOutputPath);
+
+                    return tempOutputPath; // Return the path to the cropped image
                 }
-                return false;
+
+                // If no barcode detected or probability is too low, return null
+                return null;
             }
             catch (Exception ex)
             {
@@ -44,7 +52,8 @@ namespace CalorieCounter.Services
             }
         }
 
-        private static async Task<PredictionModel?> DetectObjectAsync(Stream photoStream)
+        // Method to detect the barcode (prediction) in the image file path
+        private static async Task<PredictionModel?> DetectObjectAsync(string photoPath)
         {
             try
             {
@@ -52,13 +61,15 @@ namespace CalorieCounter.Services
                 {
                     Endpoint = ApiKeysFinder.CustomVisionEndPoint
                 };
-                // Reset stream position before reading
-                photoStream.Position = 0;
+
+                var fileStream = File.OpenRead(photoPath);
+
                 var results = await endpoint.DetectImageAsync(
                     Guid.Parse(ApiKeysFinder.ProjectId),
                     ApiKeysFinder.PublishedName,
-                    photoStream
+                    fileStream
                 );
+
                 return results.Predictions.OrderByDescending(x => x.Probability).FirstOrDefault();
             }
             catch (Exception ex)
@@ -68,5 +79,4 @@ namespace CalorieCounter.Services
             }
         }
     }
-
 }

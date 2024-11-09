@@ -3,16 +3,16 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Maui.Controls;
 using System.IO;
 using System.Threading.Tasks;
-using System.Windows.Input;
 using CalorieCounter.Services;
-using CalorieCounter.Helpers;
 using System;
+using System.Windows.Input;
 
 namespace CalorieCounter.ViewModels
 {
-    public class UploadViewModel : ObservableObject
+    public class UploadViewModel : ObservableObject, IUploadViewModel
     {
         private bool isRunning = false;
+
         public bool IsRunning
         {
             get => isRunning;
@@ -20,105 +20,213 @@ namespace CalorieCounter.ViewModels
         }
 
         private ImageSource selectedImageSource;
+
         public ImageSource SelectedImageSource
         {
             get => selectedImageSource;
             set => SetProperty(ref selectedImageSource, value);
         }
 
-        private string dailyCalories;
-        public string DailyCalories
+        private string calories = "No image processed yet";
+
+        public string Calories
         {
-            get => dailyCalories;
-            set => SetProperty(ref dailyCalories, value);
+            get => calories;
+            set => SetProperty(ref calories, value);
         }
 
-        public ICommand ChooseImageCommand { get; }
-        public ICommand UploadImageCommand { get; }
+        private string gramsEaten;
+
+        public string GramsEaten
+        {
+            get => gramsEaten;
+            set => SetProperty(ref gramsEaten, value);
+        }
+
+        private string productName;
+
+        public string ProductName
+        {
+            get => productName;
+            set => SetProperty(ref productName, value);
+        }
+
+        private string caloriesPer100g;
+
+        public string CaloriesPer100g
+        {
+            get => caloriesPer100g;
+            set => SetProperty(ref caloriesPer100g, value);
+        }
+
+        private string caloriesEaten;
+
+        public string CaloriesEaten
+        {
+            get => caloriesEaten;
+            set => SetProperty(ref caloriesEaten, value);
+        }
+
+        // Commands
+        public ICommand PickAndSearchBarcodeCommand { get; set; }
+        public ICommand TakeAndSearchBarcodeCommand { get; set; }
+        public ICommand UploadImageCommand { get; set; }
+        public ICommand CalculateCaloriesCommand { get; set; }
 
         public UploadViewModel()
         {
-            ChooseImageCommand = new AsyncRelayCommand(PickImageAsync);
-            UploadImageCommand = new AsyncRelayCommand(UploadImageAsync);
+            BindCommands();
         }
 
-        // Step 1: Pick the image from the gallery
-        private async Task PickImageAsync()
+        private void BindCommands()
         {
-            // Open image picker to choose a photo
-            var fileResult = await MediaPicker.Default.PickPhotoAsync();
-            if (fileResult != null)
-            {
-                // Open the image as a stream for processing
-                var photoStream = await fileResult.OpenReadAsync();
+            PickAndSearchBarcodeCommand = new AsyncRelayCommand(PickAndSearchBarcode);
+            TakeAndSearchBarcodeCommand = new AsyncRelayCommand(TakeAndSearchBarcode);
+            UploadImageCommand = new AsyncRelayCommand(UploadImage);
+        }
 
-                // Bind the photo stream to the UI for display
-                SelectedImageSource = ImageSource.FromStream(() => photoStream);
+        private async Task PickAndSearchBarcode()
+        {
+            if (IsRunning)
+                return;
+
+            try
+            {
+                // Ask the user to pick a photo
+                var photo = await MediaPicker.Default.PickPhotoAsync();
+                if (photo != null)
+                {
+                    // Show the photo preview
+                    SelectedImageSource = ImageSource.FromFile(photo.FullPath);
+
+                    // Ask for the grams eaten via a popup
+                    var result = await Application.Current.MainPage.DisplayPromptAsync("Enter Grams Eaten", "How many grams did you eat?", initialValue: "", keyboard: Keyboard.Numeric);
+
+                    if (result != null && int.TryParse(result, out int grams))
+                    {
+                        GramsEaten = result;
+                        await ProcessImage(photo);
+                    }
+                    else
+                    {
+                        Calories = "Please enter a valid number of grams.";
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                Calories = $"Error picking photo: {ex.Message}";
             }
         }
 
-        // Step 2: Upload and process the image for barcode scanning
-        private async Task UploadImageAsync()
+        private async Task TakeAndSearchBarcode()
         {
-            if (SelectedImageSource != null)
+            if (IsRunning)
+                return;
+
+            try
             {
-                IsRunning = true;
-
-                try
+                if (MediaPicker.Default.IsCaptureSupported)
                 {
-                    // Ensure we have a file result for the selected image
-                    var fileResult = await MediaPicker.Default.PickPhotoAsync();
-                    if (fileResult == null)
+                    var photo = await MediaPicker.Default.CapturePhotoAsync();
+                    if (photo != null)
                     {
-                        DailyCalories = "No image selected.";
-                        return;
+                        await ProcessImage(photo);
                     }
+                }
+                else
+                {
+                    Calories = "Camera capture is not supported on this device.";
+                }
+            }
+            catch (Exception ex)
+            {
+                Calories = $"Error capturing photo: {ex.Message}";
+            }
+        }
 
-                    // Open the photo stream for further processing
-                    var photoStream = await fileResult.OpenReadAsync();
+        private async Task UploadImage()
+        {
+            if (IsRunning)
+                return;
 
-                    // Step 1: Process image using BarcodeFinderService
-                    var outputCroppedPath = Path.Combine(FileSystem.CacheDirectory, "croppedImage.png");
-                    var isBarcodeFound = await BarcodeFinderService.ProcessImageAndGetBarcodeAsync(photoStream, outputCroppedPath);
+            try
+            {
+                var photo = await MediaPicker.Default.PickPhotoAsync();
+                if (photo != null)
+                {
+                    await ProcessImage(photo);
+                }
+            }
+            catch (Exception ex)
+            {
+                Calories = $"Error uploading image: {ex.Message}";
+            }
+        }
 
-                    if (isBarcodeFound)
+        private async Task ProcessImage(FileResult photo)
+        {
+            IsRunning = true;
+            Calories = "Processing image...";
+
+            try
+            {
+                // Process the image and find barcode
+                var croppedImagePath = await BarcodeFinderService.ProcessImageAndGetBarcodeAsync(photo.FullPath);
+
+                if (croppedImagePath != null)
+                {
+                    // Perform OCR to get the barcode number
+                    string barcodeNumber = await BarcodeReaderService.AnalyzeImageOCRAsync(croppedImagePath);
+
+                    // Get product info from OpenFoodFacts API using barcode
+                    var productInfo = await OpenFoodFactsService.GetProductInfoByBarcode(barcodeNumber);
+
+                    if (!string.IsNullOrEmpty(productInfo))
                     {
-                        // Step 2: Extract barcode number using BarcodeReaderService
-                        var barcodeNumber = await BarcodeReaderService.AnalyzeImageOCRAsync(photoStream);
-                        if (!string.IsNullOrEmpty(barcodeNumber))
+                        // Split product info to extract name and calories per 100g
+                        var parts = productInfo.Split(';');
+                        if (parts.Length == 2 && int.TryParse(parts[1], out int caloriesPer100gValue))
                         {
-                            // Step 3: Get product info from OpenFoodFactsService
-                            var productInfo = await OpenFoodFactsService.GetProductInfoByBarcode(barcodeNumber);
+                            ProductName = parts[0];  // Product name
+                            CaloriesPer100g = parts[1];  // Calories per 100g
+                            Calories = $"Calories per 100g: {caloriesPer100gValue}";
 
-                            if (productInfo != null)
-                            {
-                                // Parse and display calories from the product
-                                var parts = productInfo.Split(';');
-                                DailyCalories = $"Product: {parts[0]}, Calories: {parts[1]} kcal";
-                            }
-                            else
-                            {
-                                DailyCalories = "Product not found or invalid barcode.";
-                            }
+                            // Now calculate the calories based on grams eaten
+                            
+                            
+                                var totalCalories = (caloriesPer100gValue * int.Parse(GramsEaten)) / 100;
+                                CaloriesEaten = $"{totalCalories}"; // Set the CaloriesEaten
+                            
+                           
                         }
                         else
                         {
-                            DailyCalories = "No barcode detected.";
+                            Calories = "Product information is incomplete.";
                         }
                     }
                     else
                     {
-                        DailyCalories = "No barcode found in the image.";
+                        Calories = "Product not found or error retrieving data.";
                     }
                 }
-                catch (Exception ex)
+                else
                 {
-                    DailyCalories = $"Error: {ex.Message}";
+                    Calories = "No barcode detected.";
                 }
-                finally
-                {
-                    IsRunning = false;
-                }
+            }
+            catch (IOException ioEx)
+            {
+                Calories = $"Error reading file: {ioEx.Message}";
+            }
+            catch (Exception ex)
+            {
+                Calories = $"Error processing image: {ex.Message}";
+            }
+            finally
+            {
+                IsRunning = false;
             }
         }
     }

@@ -21,6 +21,8 @@ namespace CalorieCounter
 #endif
             builder.Services.AddTransient<UploadPage>();
             builder.Services.AddTransient<UploadViewModel>();
+            builder.Services.AddTransient<IUploadViewModel, UploadViewModel>();
+
             return builder.Build();
         }
     }

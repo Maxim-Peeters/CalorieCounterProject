@@ -27,29 +27,34 @@ namespace CalorieCounter.Services
             return client;
         }
 
-        private static async Task<ReadResult?> ProcessFileAsync(ComputerVisionClient client, Stream imageStream)
+        // Modify this method to process the file from a given path
+        private static async Task<ReadResult?> ProcessFileAsync(ComputerVisionClient client, string imagePath)
         {
             try
             {
-                // Start the OCR read operation on the image stream
-                var textHeaders = await client.ReadInStreamAsync(
-                    imageStream,
-                    language: "en"  // Optional: specify language if known
-                );
-
-                string operationLocation = textHeaders.OperationLocation;
-                string operationId = operationLocation.Substring(operationLocation.Length - 36);
-
-                ReadOperationResult results;
-                do
+                // Open the file at the given path and process it
+                using (var imageStream = File.OpenRead(imagePath))
                 {
-                    results = await client.GetReadResultAsync(Guid.Parse(operationId));
-                    await Task.Delay(1000); // Wait for OCR operation to complete
-                } while (results.Status == OperationStatusCodes.Running ||
-                         results.Status == OperationStatusCodes.NotStarted);
+                    // Start the OCR read operation on the image stream
+                    var textHeaders = await client.ReadInStreamAsync(
+                        imageStream,
+                        language: "en"  // Optional: specify language if known
+                    );
 
-                // Return the first result if it exists
-                return results.AnalyzeResult?.ReadResults.FirstOrDefault();
+                    string operationLocation = textHeaders.OperationLocation;
+                    string operationId = operationLocation.Substring(operationLocation.Length - 36);
+
+                    ReadOperationResult results;
+                    do
+                    {
+                        results = await client.GetReadResultAsync(Guid.Parse(operationId));
+                        await Task.Delay(1000); // Wait for OCR operation to complete
+                    } while (results.Status == OperationStatusCodes.Running ||
+                             results.Status == OperationStatusCodes.NotStarted);
+
+                    // Return the first result if it exists
+                    return results.AnalyzeResult?.ReadResults.FirstOrDefault();
+                }
             }
             catch (ComputerVisionOcrErrorException ex)
             {
@@ -58,10 +63,11 @@ namespace CalorieCounter.Services
             }
         }
 
-        public static async Task<string> AnalyzeImageOCRAsync(Stream croppedImageStream)
+        // Modify this method to accept a file path instead of a stream
+        public static async Task<string> AnalyzeImageOCRAsync(string imagePath)
         {
             using var client = CreateAuthorizedClient();
-            var readResult = await ProcessFileAsync(client, croppedImageStream);
+            var readResult = await ProcessFileAsync(client, imagePath);
 
             if (readResult != null)
             {

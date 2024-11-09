@@ -3,34 +3,102 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:viewModels="clr-namespace:CalorieCounter.ViewModels"
              x:Class="CalorieCounter.Views.UploadPage"
-             Title="Image Upload">
+             Title="Image Upload"
+             BackgroundColor="#F0F4F8">
 
     <ContentPage.BindingContext>
         <viewModels:UploadViewModel />
     </ContentPage.BindingContext>
 
-    <StackLayout Padding="20" Spacing="15">
-        <Label Text="Select an Image to Upload"
-               FontSize="24"
-               HorizontalOptions="Center" />
+    <Grid Padding="30" RowSpacing="20" ColumnSpacing="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
 
-        <!-- Correct binding for SelectedImageSource -->
-        <Image Source="{Binding SelectedImageSource}"
-               HeightRequest="200"
-               Aspect="AspectFit"
-               HorizontalOptions="Center" />
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
 
-        <Button Text="Choose Image"
-                Command="{Binding ChooseImageCommand}" 
-                HorizontalOptions="Center" />
-
-        <Button Text="Upload Image"
-                Command="{Binding UploadImageCommand}" 
-                HorizontalOptions="Center" />
-
-        <Label Text="{Binding DailyCalories, StringFormat='Total Daily Calories: {0:F0}'}"
-               FontSize="18"
+        <!-- Header Section -->
+        <Label Text="Upload Food Image"
+               FontSize="36"
+               FontAttributes="Bold"
                HorizontalOptions="Center"
-               VerticalOptions="EndAndExpand" />
-    </StackLayout>
+               VerticalOptions="Center"
+               TextColor="#3A3A3A"
+               Grid.Row="0" 
+               Grid.ColumnSpan="2" />
+
+        <!-- Image Display Section -->
+        <Frame Grid.Row="1"
+               CornerRadius="20"
+               HasShadow="True"
+               Padding="0"
+               HorizontalOptions="FillAndExpand"
+               VerticalOptions="FillAndExpand"
+               BackgroundColor="White">
+            <Image Source="{Binding SelectedImageSource}"
+                   Aspect="AspectFit"
+                   HorizontalOptions="Fill"
+                   VerticalOptions="Fill" />
+        </Frame>
+
+        <!-- Loading Indicator -->
+        <ActivityIndicator IsRunning="{Binding IsRunning}"
+                          IsVisible="{Binding IsRunning}"
+                          Grid.Row="1"
+                          HorizontalOptions="Center"
+                          VerticalOptions="Center"
+                          Color="#FF6347" />
+
+        <!-- Button Controls Section -->
+        <VerticalStackLayout Grid.Row="2"
+                             Spacing="15"
+                             HorizontalOptions="Center"
+                             VerticalOptions="Center">
+            <Button Text="Pick from Gallery"
+                    Command="{Binding PickAndSearchBarcodeCommand}"
+                    WidthRequest="220"
+                    HeightRequest="60"
+                    BackgroundColor="#4CAF50"
+                    TextColor="White"
+                    FontSize="18"
+                    CornerRadius="30"
+                    ImageSource="gallery_icon.png" />
+            <Button Text="Take Photo"
+                    Command="{Binding TakeAndSearchBarcodeCommand}"
+                    WidthRequest="220"
+                    HeightRequest="60"
+                    BackgroundColor="#FF6347"
+                    TextColor="White"
+                    FontSize="18"
+                    CornerRadius="30"
+                    ImageSource="camera_icon.png" />
+        </VerticalStackLayout>
+
+        <!-- Results Section -->
+        <StackLayout Grid.Row="3"
+                     Spacing="15"
+                     HorizontalOptions="Center"
+                     VerticalOptions="Center">
+            <Label Text="{Binding ProductName, StringFormat='Product: {0}'}"
+                   FontSize="22"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"
+                   TextColor="#3A3A3A" />
+            <Label Text="{Binding CaloriesPer100g, StringFormat='Calories per 100g: {0}'}"
+                   FontSize="20"
+                   HorizontalOptions="Center"
+                   TextColor="#3A3A3A" />
+            <Label Text="{Binding CaloriesEaten, StringFormat='Calories Eaten: {0}'}"
+                   FontSize="20"
+                   HorizontalOptions="Center"
+                   TextColor="#3A3A3A" />
+        </StackLayout>
+
+    </Grid>
 </ContentPage>
