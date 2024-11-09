@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CalorieCounterAPI.Services
+namespace CalorieCounter.Services
 {
     public static class ApiKeys
     {

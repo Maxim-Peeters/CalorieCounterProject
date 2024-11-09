@@ -24,10 +24,14 @@ namespace CalorieCounter.Services
         {
             try
             {
-                var prediction = await DetectObjectAsync(photoStream);
+                // Ensure the stream position is set to the beginning before processing
+                photoStream.Position = 0;
 
+                var prediction = await DetectObjectAsync(photoStream);
                 if (prediction != null && prediction.Probability > MinProbability)
                 {
+                    // Reset position again before cropping
+                    photoStream.Position = 0;
                     ImageHelper.CropBoundingBox(photoStream, prediction.BoundingBox, outputCroppedPath);
                     return true;
                 }
@@ -37,10 +41,6 @@ namespace CalorieCounter.Services
             {
                 Console.WriteLine($"Error processing image: {ex.Message}");
                 throw;
-            }
-            finally
-            {
-                photoStream.Dispose();
             }
         }
 
@@ -52,16 +52,13 @@ namespace CalorieCounter.Services
                 {
                     Endpoint = ApiKeysFinder.CustomVisionEndPoint
                 };
-
                 // Reset stream position before reading
                 photoStream.Position = 0;
-
                 var results = await endpoint.DetectImageAsync(
                     Guid.Parse(ApiKeysFinder.ProjectId),
                     ApiKeysFinder.PublishedName,
                     photoStream
                 );
-
                 return results.Predictions.OrderByDescending(x => x.Probability).FirstOrDefault();
             }
             catch (Exception ex)
@@ -71,4 +68,5 @@ namespace CalorieCounter.Services
             }
         }
     }
+
 }
