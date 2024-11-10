@@ -85,42 +85,44 @@
         </VerticalStackLayout>
 
         <!-- Results Section -->
+        <!-- Results Section -->
         <StackLayout Grid.Row="3"
-                     Spacing="15"
-                     HorizontalOptions="Center"
-                     VerticalOptions="Center">
-
+             Spacing="15"
+             HorizontalOptions="Center"
+             VerticalOptions="Center"
+             IsVisible="{Binding IsProductInfoAvailable}">
             <Label Text="{Binding ProductName, StringFormat='🍏 Product: {0}'}"
-                   FontSize="22"
-                   FontAttributes="Bold"
-                   HorizontalOptions="Center"
-                   TextColor="#2C3E50" />
+           FontSize="22"
+           FontAttributes="Bold"
+           HorizontalOptions="Center"
+           TextColor="#2C3E50" />
             <Label Text="{Binding CaloriesPer100g, StringFormat='🔥 Calories per 100g: {0}'}"
-                   FontSize="20"
-                   HorizontalOptions="Center"
-                   TextColor="#2C3E50" />
-
+           FontSize="20"
+           HorizontalOptions="Center"
+           TextColor="#2C3E50" />
             <Label Text="{Binding GramsEaten, StringFormat='🍽️ Grams eaten: {0} g'}"
-                   FontSize="20"
-                   HorizontalOptions="Center"
-                   TextColor="#2C3E50" />
+           FontSize="20"
+           HorizontalOptions="Center"
+           TextColor="#2C3E50" />
             <Label Text="{Binding CaloriesEaten, StringFormat='🔥 Total Calories: {0} kcal'}"
-                   FontSize="20"
-                   HorizontalOptions="Center"
-                   TextColor="#2C3E50" />
+           FontSize="20"
+           HorizontalOptions="Center"
+           TextColor="#2C3E50" />
             <Label Text="{Binding SelectedCategory, StringFormat='🍽️ Category: {0}'}"
-       FontSize="20"
-       HorizontalOptions="Center"
-       TextColor="#2C3E50" />
+           FontSize="20"
+           HorizontalOptions="Center"
+           TextColor="#2C3E50" />
 
             <Button Text="Add Product"
-                    Command="{Binding AddProductCommand}"
-                    BackgroundColor="Green"
-                    TextColor="White"
-                    FontSize="18"
-                    CornerRadius="15"
-                    WidthRequest="200"
-                    HeightRequest="55" />
+            Command="{Binding AddProductCommand}"
+            BackgroundColor="Green"
+            TextColor="White"
+            FontSize="18"
+            CornerRadius="15"
+            WidthRequest="200"
+            HeightRequest="55"
+            IsVisible="{Binding IsProductInfoAvailable}" />
         </StackLayout>
+
     </Grid>
 </ContentPage>

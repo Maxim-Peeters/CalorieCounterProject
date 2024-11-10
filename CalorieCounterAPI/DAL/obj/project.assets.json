@@ -2969,23 +2969,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\devin\\.nuget\\packages\\": {},
+    "C:\\Users\\makzi\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\devin\\Documents\\School\\3ITF\\.NET Advanced\\Calorie Teller Project\\CalorieCounterProject\\CalorieCounterAPI\\DAL\\DAL.csproj",
+      "projectUniqueName": "C:\\Users\\makzi\\Documents\\School\\.NET advanced\\CalorieCounterProject\\CalorieCounterAPI\\DAL\\DAL.csproj",
       "projectName": "DAL",
-      "projectPath": "C:\\Users\\devin\\Documents\\School\\3ITF\\.NET Advanced\\Calorie Teller Project\\CalorieCounterProject\\CalorieCounterAPI\\DAL\\DAL.csproj",
-      "packagesPath": "C:\\Users\\devin\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\devin\\Documents\\School\\3ITF\\.NET Advanced\\Calorie Teller Project\\CalorieCounterProject\\CalorieCounterAPI\\DAL\\obj\\",
+      "projectPath": "C:\\Users\\makzi\\Documents\\School\\.NET advanced\\CalorieCounterProject\\CalorieCounterAPI\\DAL\\DAL.csproj",
+      "packagesPath": "C:\\Users\\makzi\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\makzi\\Documents\\School\\.NET advanced\\CalorieCounterProject\\CalorieCounterAPI\\DAL\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\devin\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\makzi\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],

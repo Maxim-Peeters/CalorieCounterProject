@@ -76,6 +76,13 @@ namespace CalorieCounter.ViewModels
             get => selectedCategory;
             set => SetProperty(ref selectedCategory, value);
         }
+        private bool isProductInfoAvailable;
+
+public bool IsProductInfoAvailable
+{
+    get => isProductInfoAvailable;
+    set => SetProperty(ref isProductInfoAvailable, value);
+}
 
         // Commands
         public ICommand PickAndSearchBarcodeCommand { get; set; }
@@ -281,6 +288,7 @@ namespace CalorieCounter.ViewModels
                                 Barcode = barcodeNumber,
                                 Category = SelectedCategory
                             };
+                            IsProductInfoAvailable = true; // Set to true when data is populated
 
                             // Don't post the product yet, just store it.
                             Calories = "Product ready to add. Press 'Add Product'.";
@@ -288,11 +296,15 @@ namespace CalorieCounter.ViewModels
                         else
                         {
                             Calories = "Product information is incomplete.";
+                            IsProductInfoAvailable = false;
+
                         }
                     }
                     else
                     {
                         Calories = "Product not found or error retrieving data.";
+                        IsProductInfoAvailable = false;
+
                     }
                 }
                 else
