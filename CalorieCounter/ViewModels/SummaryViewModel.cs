@@ -123,25 +123,33 @@ namespace CalorieCounter.ViewModels
                 return;
             }
 
-            // Prompt for category
-            var categoryResponse = await App.Current.MainPage.DisplayPromptAsync(
-                "Edit Category",
-                "Enter the new category:",
-                initialValue: product.Category.ToString()); // Convert Category to string here
+            // Use DisplayActionSheet for category selection, like in UploadViewModel
+            var categoryResponse = await App.Current.MainPage.DisplayActionSheet(
+                "Select Category",
+                "Cancel",
+                null,
+                Enum.GetNames(typeof(Category)).ToArray());
 
-            if (string.IsNullOrEmpty(categoryResponse))
+            if (categoryResponse == null || categoryResponse == "Cancel")
             {
-                await App.Current.MainPage.DisplayAlert("Error", "Category cannot be empty.", "OK");
+                await App.Current.MainPage.DisplayAlert("Error", "Category selection was cancelled.", "OK");
                 return;
             }
 
-            // Update the product
+            // Parse the selected category
+            if (!Enum.TryParse(categoryResponse, out Category newCategory))
+            {
+                await App.Current.MainPage.DisplayAlert("Error", "Invalid category selected.", "OK");
+                return;
+            }
+
+            // Update the product details
             product.AmountInGrams = newGrams;
-            product.Category = (Category)Enum.Parse(typeof(Category), categoryResponse); // Convert string back to Category enum if needed
+            product.Category = newCategory;
 
             try
             {
-                // Call the API to update the product (you would need to implement this in the service)
+                // Call the API to update the product
                 await ApiService<Product>.PutAsync($"Calories/{product.ProductId}", product);
 
                 // Refresh the product list to reflect the changes
