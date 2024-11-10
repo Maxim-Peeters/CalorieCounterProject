@@ -9,6 +9,6 @@ namespace CalorieCounter.Services
     public interface INavigationService
     {
         Task NavigateToSummaryPageAsync();
-        Task NavigateBackAsync();
+        Task NavigateToUploadPageAsync();
     }
 }

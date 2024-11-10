@@ -8,7 +8,6 @@ namespace CalorieCounter.Models
     public class Product : ObservableObject
     {
         [JsonPropertyName("productId")]  // Ensure the mapping from API to model property
-
         private int productId;
         private string name;
         private int caloriesPer100g;
@@ -17,7 +16,7 @@ namespace CalorieCounter.Models
         private Category category;  // Assuming Category is an Enum
         private Day? day;  // Link to Day, nullable in case it's not set
 
-        public int Id
+        public int ProductId
         {
             get => productId;
             set => SetProperty(ref productId, value);
@@ -66,7 +65,7 @@ namespace CalorieCounter.Models
 
         public Product(int productId, string name, int caloriesPer100g, int amountInGrams, string barcode, Category category, Day? day = null)
         {
-            Id = productId;
+            ProductId = productId;
             Name = name;
             CaloriesPer100g = caloriesPer100g;
             AmountInGrams = amountInGrams;

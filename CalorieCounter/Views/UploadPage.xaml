@@ -3,7 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:viewModels="clr-namespace:CalorieCounter.ViewModels"
              x:Class="CalorieCounter.Views.UploadPage"
-             Title="Image Upload"
              BackgroundColor="#F0F4F8">
 
     
@@ -57,7 +56,7 @@
                     Command="{Binding PickAndSearchBarcodeCommand}"
                     WidthRequest="250"
                     HeightRequest="55"
-                    BackgroundColor="#3498DB"
+                    BackgroundColor="Orange"
                     TextColor="White"
                     FontSize="18"
                     CornerRadius="15"
@@ -68,18 +67,18 @@
                     Command="{Binding TakeAndSearchBarcodeCommand}"
                     WidthRequest="250"
                     HeightRequest="55"
-                    BackgroundColor="#E74C3C"
+                    BackgroundColor="DarkOrange"
                     TextColor="White"
                     FontSize="18"
                     CornerRadius="15"
                     ImageSource="camera_icon.png" />
 
             <!-- Navigate to Summary Page Button -->
-            <Button Text="View Summary"
+            <Button Text="Go Back to Summary"
                     Command="{Binding OpenSummaryCommand}"
                     WidthRequest="250"
                     HeightRequest="55"
-                    BackgroundColor="#1ABC9C"
+                    BackgroundColor="DarkCyan"
                     TextColor="White"
                     FontSize="18"
                     CornerRadius="15" />
@@ -90,6 +89,7 @@
                      Spacing="15"
                      HorizontalOptions="Center"
                      VerticalOptions="Center">
+
             <Label Text="{Binding ProductName, StringFormat='🍏 Product: {0}'}"
                    FontSize="22"
                    FontAttributes="Bold"
@@ -99,7 +99,12 @@
                    FontSize="20"
                    HorizontalOptions="Center"
                    TextColor="#2C3E50" />
-            <Label Text="{Binding CaloriesEaten, StringFormat='🍽️ Calories Eaten: {0}'}"
+
+            <Label Text="{Binding GramsEaten, StringFormat='🍽️ Grams eaten: {0} g'}"
+                   FontSize="20"
+                   HorizontalOptions="Center"
+                   TextColor="#2C3E50" />
+            <Label Text="{Binding CaloriesEaten, StringFormat='🔥 Total Calories: {0} kcal'}"
                    FontSize="20"
                    HorizontalOptions="Center"
                    TextColor="#2C3E50" />
@@ -107,7 +112,15 @@
        FontSize="20"
        HorizontalOptions="Center"
        TextColor="#2C3E50" />
-        </StackLayout>
 
+            <Button Text="Add Product"
+                    Command="{Binding AddProductCommand}"
+                    BackgroundColor="Green"
+                    TextColor="White"
+                    FontSize="18"
+                    CornerRadius="15"
+                    WidthRequest="200"
+                    HeightRequest="55" />
+        </StackLayout>
     </Grid>
 </ContentPage>

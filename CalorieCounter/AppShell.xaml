@@ -7,16 +7,14 @@
     Shell.FlyoutBehavior="Disabled"
     Title="CalorieCounter">
 
-    <!-- Existing UploadPage ShellContent -->
-    <ShellContent
-        Title="Upload"
-        ContentTemplate="{DataTemplate local:UploadPage}"
-        Route="UploadPage" />
-
     <!-- New SummaryPage ShellContent -->
     <ShellContent
-        Title="Summary"
         ContentTemplate="{DataTemplate local:SummaryPage}"
         Route="SummaryPage" />
 
+
+    <!-- Existing UploadPage ShellContent -->
+    <ShellContent
+    ContentTemplate="{DataTemplate local:UploadPage}"
+    Route="UploadPage" />
 </Shell>

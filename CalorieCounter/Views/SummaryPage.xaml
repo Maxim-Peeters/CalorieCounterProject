@@ -1,19 +1,13 @@
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+﻿<?xml version="1.0" encoding="utf-8" ?>
+    <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:local="clr-namespace:CalorieCounter.Views"
+             xmlns:views="clr-namespace:CalorieCounter.Views"
              x:Class="CalorieCounter.Views.SummaryPage"
-             Title="Summary"
              BackgroundColor="#F0F4F8">
 
     <ScrollView>
         <StackLayout Padding="20" Spacing="20">
 
-            <!-- Total Calories for Today -->
-            <Label Text="{Binding TotalCalories, StringFormat='Total Calories Today: {0} kcal'}"
-                   FontSize="22"
-                   HorizontalOptions="Center"
-                   TextColor="#2C3E50" 
-                   FontAttributes="Bold" />
 
             <!-- Today's Products Section -->
             <Label Text="Today's Products:"
@@ -24,40 +18,59 @@
                 <CollectionView ItemsSource="{Binding Products}" SelectionMode="None">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <StackLayout Padding="10" Spacing="10">
-                                <Label Text="{Binding Name}" FontSize="18" TextColor="#2C3E50" />
-                                <Label Text="{Binding Category, StringFormat='Category: {0}'}" FontSize="14" TextColor="#7F8C8D" />
-                                <Label Text="{Binding TotalCalories, StringFormat='Calories: {0} kcal'}"
-                                       FontSize="14" TextColor="#7F8C8D" />
-                            </StackLayout>
+                            <Grid RowDefinitions="Auto" ColumnDefinitions="*, Auto, Auto" Padding="0">
+                                <!-- Product details -->
+                                <StackLayout VerticalOptions="CenterAndExpand" Grid.Column="0" Padding="10">
+                                    <Label Text="{Binding Name}" FontSize="18" TextColor="#2C3E50" />
+                                    <Label Text="{Binding Category, StringFormat='Category: {0}'}" FontSize="14" TextColor="#7F8C8D" />
+                                    <Label Text="{Binding AmountInGrams, StringFormat='Grams: {0} g'}"
+                                           FontSize="14" TextColor="#7F8C8D" />
+                                    <Label Text="{Binding TotalCalories, StringFormat='Calories: {0} kcal'}"
+                                           FontSize="14" TextColor="#7F8C8D" />
+                                </StackLayout>
+
+                                <!-- Edit Button -->
+                                <Button Text="✏️"
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type views:SummaryPage}}, Path=BindingContext.EditCommand}"
+                                    CommandParameter="{Binding .}"
+                                    BackgroundColor="DarkCyan"
+                                    TextColor="White"
+                                    FontSize="14"
+                                    CornerRadius="10"
+                                    VerticalOptions="Center"
+                                    HorizontalOptions="End"
+                                    Margin="0,0,10,0"
+                                    Grid.Column="1" />
+
+                                <!-- Delete Button -->
+                                <Button Text="🗑️"
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type views:SummaryPage}}, Path=BindingContext.DeleteCommand}"
+                                    CommandParameter="{Binding .}"
+                                    BackgroundColor="#E74C3C"
+                                    TextColor="White"
+                                    FontSize="14"
+                                    CornerRadius="10"
+                                    VerticalOptions="Center"
+                                    HorizontalOptions="End"
+                                    Margin="0,0,10,0"
+                                    Grid.Column="2" />
+                            </Grid>
+
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>
             </Frame>
 
-            <!-- Other Days Section -->
-            <Label Text="Other Days:"
-                   FontSize="20"
-                   FontAttributes="Bold"
-                   TextColor="#2C3E50" />
-            <Frame BackgroundColor="White" Padding="10" BorderColor="#BDC3C7" CornerRadius="10">
-                <CollectionView ItemsSource="{Binding AllDays}" SelectionMode="None">
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate>
-                            <StackLayout Padding="10" Spacing="10">
-                                <Label Text="{Binding Date, StringFormat='{0:MMMM dd, yyyy}'}"
-                                       FontSize="18" TextColor="#2C3E50" />
-                                <Label Text="{Binding Calories, StringFormat='Total Calories: {0} kcal'}"
-                                       FontSize="16" TextColor="#2C3E50" />
-                            </StackLayout>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
-            </Frame>
+            <!-- Total Calories for Today -->
+            <Label Text="{Binding TotalCalories, StringFormat='Total Calories Today: {0} kcal'}"
+               FontSize="22"
+               HorizontalOptions="Center"
+               TextColor="#2C3E50" 
+               FontAttributes="Bold" />
 
-            <!-- Go Back Button -->
-            <Button Text="Go Back"
-                    Command="{Binding GoBackCommand}"
+            <!-- Go To Add Product -->
+            <Button Text="Add Product"
+                    Command="{Binding AddProductCommand}"
                     WidthRequest="250"
                     HeightRequest="55"
                     BackgroundColor="#3498DB"

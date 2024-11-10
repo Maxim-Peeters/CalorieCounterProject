@@ -51,7 +51,7 @@ namespace CalorieCounter.ViewModels
             set => SetProperty(ref totalCalories, value);
         }
 
-        public ICommand GoBackCommand { get; set; }
+        public ICommand AddProductCommand { get; set; }
         public ICommand RefreshCommand { get; set; }
         public ICommand EditCommand { get; set; }
         public ICommand DeleteCommand { get; set; }
@@ -69,9 +69,10 @@ namespace CalorieCounter.ViewModels
 
         private void BindCommands()
         {
-            GoBackCommand = new AsyncRelayCommand(GoBack);
+            AddProductCommand = new AsyncRelayCommand(AddProduct);
             RefreshCommand = new AsyncRelayCommand(LoadDataAsync);
-            
+            EditCommand = new AsyncRelayCommand<Product>(EditProduct);
+            DeleteCommand = new AsyncRelayCommand<Product>(DeleteProduct);
         }
 
         public async Task LoadDataAsync()
@@ -83,9 +84,6 @@ namespace CalorieCounter.ViewModels
 
                 var today = days.FirstOrDefault(d => d.Date.Date == Date.Date);
                 Products = new ObservableCollection<Product>(today?.Products ?? new List<Product>());
-
-                // Log the product IDs to verify they are being fetched correctly
-                
 
                 TotalCalories = Products.Sum(p => p.TotalCalories);
             }
@@ -99,13 +97,94 @@ namespace CalorieCounter.ViewModels
             }
         }
 
-        public async Task GoBack()
+        public async Task AddProduct()
         {
-            await _navigationService.NavigateBackAsync();
+            await _navigationService.NavigateToUploadPageAsync();
         }
 
-       
+        public async Task EditProduct(Product product)
+        {
+            if (product == null)
+            {
+                return;
+            }
 
+            // Prompt for grams
+            var gramsResponse = await App.Current.MainPage.DisplayPromptAsync(
+                "Edit Grams",
+                "Enter the new grams value:",
+                initialValue: product.AmountInGrams.ToString(),
+                maxLength: 10,
+                keyboard: Keyboard.Numeric);
+
+            if (string.IsNullOrEmpty(gramsResponse) || !int.TryParse(gramsResponse, out int newGrams))
+            {
+                await App.Current.MainPage.DisplayAlert("Error", "Invalid grams value.", "OK");
+                return;
+            }
+
+            // Prompt for category
+            var categoryResponse = await App.Current.MainPage.DisplayPromptAsync(
+                "Edit Category",
+                "Enter the new category:",
+                initialValue: product.Category.ToString()); // Convert Category to string here
+
+            if (string.IsNullOrEmpty(categoryResponse))
+            {
+                await App.Current.MainPage.DisplayAlert("Error", "Category cannot be empty.", "OK");
+                return;
+            }
+
+            // Update the product
+            product.AmountInGrams = newGrams;
+            product.Category = (Category)Enum.Parse(typeof(Category), categoryResponse); // Convert string back to Category enum if needed
+
+            try
+            {
+                // Call the API to update the product (you would need to implement this in the service)
+                await ApiService<Product>.PutAsync($"Calories/{product.ProductId}", product);
+
+                // Refresh the product list to reflect the changes
+                await LoadDataAsync();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error editing product: {ex.Message}");
+                await App.Current.MainPage.DisplayAlert("Error", "Failed to update the product. Please try again.", "OK");
+            }
+        }
+
+
+        public async Task DeleteProduct(Product product)
+        {
+            if (product == null)
+            {
+                return;
+            }
+
+            // Show confirmation dialog
+            var confirmed = await App.Current.MainPage.DisplayAlert(
+                "Confirm Deletion",
+                "Are you sure you want to delete this product?",
+                "Yes",
+                "No");
+
+            if (!confirmed)
+            {
+                return; // User cancelled the deletion
+            }
+
+            try
+            {
+                await ApiService<object>.DeleteAsync($"Calories/{product.ProductId}");
+                Products.Remove(product);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error deleting product: {ex.Message}");
+                await App.Current.MainPage.DisplayAlert("Error", "Failed to delete the product. Please try again.", "OK");
+            }
+        }
 
     }
 }

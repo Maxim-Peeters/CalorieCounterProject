@@ -9,6 +9,7 @@ namespace CalorieCounter.ViewModels
         ICommand PickAndSearchBarcodeCommand { get; set; }
         ICommand TakeAndSearchBarcodeCommand { get; set; }
         ICommand UploadImageCommand { get; set; }
+        ICommand OpenSummaryCommand { get; set; }
 
         // Properties for UI bindings
         string Calories { get; set; }

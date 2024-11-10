@@ -14,6 +14,7 @@ namespace CalorieCounter.ViewModels
     {
         private bool isRunning = false;
         private INavigationService _navigationService;
+        private Product currentProduct;
 
         public bool IsRunning
         {
@@ -82,6 +83,7 @@ namespace CalorieCounter.ViewModels
         public ICommand UploadImageCommand { get; set; }
         public ICommand CalculateCaloriesCommand { get; set; }
         public ICommand OpenSummaryCommand { get; set; }
+        public ICommand AddProductCommand { get; set; }
 
         public UploadViewModel(INavigationService navigationService)
         {
@@ -97,7 +99,7 @@ namespace CalorieCounter.ViewModels
             TakeAndSearchBarcodeCommand = new AsyncRelayCommand(TakeAndSearchBarcode);
             UploadImageCommand = new AsyncRelayCommand(UploadImage);
             OpenSummaryCommand = new AsyncRelayCommand(GoToSummary);
-
+            AddProductCommand = new AsyncRelayCommand(AddProduct);
         }
 
         private async Task PickAndSearchBarcode()
@@ -252,43 +254,36 @@ namespace CalorieCounter.ViewModels
 
             try
             {
-                // Process the image and find barcode
                 var croppedImagePath = await BarcodeFinderService.ProcessImageAndGetBarcodeAsync(photo.FullPath);
 
                 if (croppedImagePath != null)
                 {
-                    // Perform OCR to get the barcode number
                     string barcodeNumber = await BarcodeReaderService.AnalyzeImageOCRAsync(croppedImagePath);
-
-                    // Get product info from OpenFoodFacts API using barcode
                     var productInfo = await OpenFoodFactsService.GetProductInfoByBarcode(barcodeNumber);
 
                     if (!string.IsNullOrEmpty(productInfo))
                     {
-                        // Split product info to extract name and calories per 100g
                         var parts = productInfo.Split(';');
                         if (parts.Length == 2 && int.TryParse(parts[1], out int caloriesPer100gValue))
                         {
-                            ProductName = parts[0];  // Product name
-                            CaloriesPer100g = parts[1];  // Calories per 100g
+                            ProductName = parts[0];
+                            CaloriesPer100g = parts[1];
                             Calories = $"Calories per 100g: {caloriesPer100gValue}";
 
-                            // Now calculate the calories based on grams eaten
                             var totalCalories = (caloriesPer100gValue * int.Parse(GramsEaten)) / 100;
-                            CaloriesEaten = $"{totalCalories}"; // Set the CaloriesEaten
+                            CaloriesEaten = $"{totalCalories}";
 
-                            // Prepare the product object
-                            var product = new Product
+                            currentProduct = new Product
                             {
                                 Name = ProductName,
                                 CaloriesPer100g = caloriesPer100gValue,
                                 AmountInGrams = int.Parse(GramsEaten),
                                 Barcode = barcodeNumber,
-                                Category = SelectedCategory // You can categorize the product if needed, e.g., food category
+                                Category = SelectedCategory
                             };
 
-                            // Send product data to the API
-                            await ApiService<Product>.PostAsync("Calories", product);  // Assuming the endpoint is "Calories"
+                            // Don't post the product yet, just store it.
+                            Calories = "Product ready to add. Press 'Add Product'.";
                         }
                         else
                         {
@@ -318,6 +313,27 @@ namespace CalorieCounter.ViewModels
                 IsRunning = false;
             }
         }
+
+        private async Task AddProduct()
+        {
+            if (currentProduct == null)
+            {
+                Calories = "No product to add.";
+                return;
+            }
+
+            try
+            {
+                await ApiService<Product>.PostAsync("Calories", currentProduct); // Post to API
+                Calories = "Product added successfully.";
+                await GoToSummary();
+            }
+            catch (Exception ex)
+            {
+                Calories = $"Error adding product: {ex.Message}";
+            }
+        }
+
         private async Task GoToSummary()
         {
             await _navigationService.NavigateToSummaryPageAsync();

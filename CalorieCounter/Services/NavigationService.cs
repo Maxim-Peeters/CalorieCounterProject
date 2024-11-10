@@ -19,8 +19,10 @@ public class NavigationService : INavigationService
         await Application.Current.MainPage.Navigation.PushAsync(summaryPage);
     }
 
-    public async Task NavigateBackAsync()
+    public async Task NavigateToUploadPageAsync()
     {
-        await Application.Current.MainPage.Navigation.PopAsync();
+        var vm = new UploadViewModel(this);
+        var page = new UploadPage(vm);
+        await Application.Current.MainPage.Navigation.PushAsync(page);
     }
 }

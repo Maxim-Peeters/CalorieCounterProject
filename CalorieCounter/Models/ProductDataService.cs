@@ -29,7 +29,11 @@ namespace CalorieCounter.Services
             return products.Sum(p => p.TotalCalories);
         }
 
-        // Delete a product
-        
+        // Delete a product by ID
+        public async Task<bool> DeleteProductAsync(int productId)
+        {
+            var response = await ApiService<bool>.DeleteAsync($"Calories/{productId}");
+            return response;
+        }
     }
 }

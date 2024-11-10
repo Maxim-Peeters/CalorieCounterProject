@@ -79,16 +79,19 @@ namespace CalorieCounter.Services
         }
 
         // DELETE request for deleting data
-        public static async Task DeleteAsync(string endPoint)
+        public static async Task<bool> DeleteAsync(string endPoint)
         {
+            string url = BASE_URL + endPoint;
             try
             {
-                string url = BASE_URL + endPoint;
                 var response = await client.DeleteAsync(url);
-                if (!response.IsSuccessStatusCode)
-                {
-                    throw new Exception($"Request failed with status code {response.StatusCode}");
-                }
+                response.EnsureSuccessStatusCode();
+
+                return response.IsSuccessStatusCode;
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new Exception($"Network error during DELETE request: {ex.Message}");
             }
             catch (Exception ex)
             {
