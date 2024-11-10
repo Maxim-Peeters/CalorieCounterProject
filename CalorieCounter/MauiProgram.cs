@@ -2,6 +2,7 @@
 using CalorieCounter.ViewModels;
 using CalorieCounter.Views;
 using CalorieCounter.Services;
+
 namespace CalorieCounter
 {
     public static class MauiProgram

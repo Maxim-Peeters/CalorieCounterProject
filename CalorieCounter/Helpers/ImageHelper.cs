@@ -1,7 +1,5 @@
 ﻿using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction.Models;
 using System.Drawing;
-using System.IO;
-
 namespace CalorieCounter.Helpers
 {
     public class ImageHelper

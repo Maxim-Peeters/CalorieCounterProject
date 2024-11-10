@@ -8,7 +8,7 @@ namespace CalorieCounter.Services
 {
     public static class ApiService<T>
     {
-        private static readonly string BASE_URL = "https://localhost:7149/api/";
+        private static readonly string BASE_URL = "http://192.168.0.237:5162/api/";
         static HttpClient client = new HttpClient() { Timeout = TimeSpan.FromSeconds(60) };
 
         // GET request for retrieving data
@@ -36,7 +36,7 @@ namespace CalorieCounter.Services
                     throw new Exception($"Request failed with status code {response.StatusCode}");
                 }
             }
-            catch (Exception ex)
+                catch (Exception ex)
             {
                 throw new Exception("Error during GET request: " + ex.Message);
             }

@@ -76,13 +76,19 @@ namespace CalorieCounter.ViewModels
             get => selectedCategory;
             set => SetProperty(ref selectedCategory, value);
         }
-        private bool isProductInfoAvailable;
 
-public bool IsProductInfoAvailable
-{
-    get => isProductInfoAvailable;
-    set => SetProperty(ref isProductInfoAvailable, value);
-}
+        private bool _isProductInfoAvailable;
+
+        public bool IsProductInfoAvailable
+        {
+            get => _isProductInfoAvailable;
+            set
+            {
+                _isProductInfoAvailable = value;
+                OnPropertyChanged(nameof(IsProductInfoAvailable));
+            }
+        }
+
 
         // Commands
         public ICommand PickAndSearchBarcodeCommand { get; set; }

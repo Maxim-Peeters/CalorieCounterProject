@@ -93,7 +93,7 @@ namespace CalorieCounter.ViewModels
                 Products = new ObservableCollection<Product>();
                 AllDays = new ObservableCollection<Day>();
                 TotalCalories = 0;
-                await App.Current.MainPage.DisplayAlert("Error", "Failed to load data. Please try again later.", "OK");
+                await App.Current.MainPage.DisplayAlert("Error", $"Failed to load data. {ex.Message} Please try again later.", "OK");
             }
         }
 
