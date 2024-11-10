@@ -1,4 +1,7 @@
-﻿namespace CalorieCounter
+﻿using CalorieCounter.ViewModels;
+using CalorieCounter.Views;
+
+namespace CalorieCounter
 {
     public partial class App : Application
     {

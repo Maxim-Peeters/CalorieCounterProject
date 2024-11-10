@@ -1,0 +1,72 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:CalorieCounter.Views"
+             x:Class="CalorieCounter.Views.SummaryPage"
+             Title="Summary"
+             BackgroundColor="#F0F4F8">
+
+    <ScrollView>
+        <StackLayout Padding="20" Spacing="20">
+
+            <!-- Total Calories for Today -->
+            <Label Text="{Binding TotalCalories, StringFormat='Total Calories Today: {0} kcal'}"
+                   FontSize="22"
+                   HorizontalOptions="Center"
+                   TextColor="#2C3E50" 
+                   FontAttributes="Bold" />
+
+            <!-- Today's Products Section -->
+            <Label Text="Today's Products:"
+                   FontSize="20"
+                   FontAttributes="Bold"
+                   TextColor="#2C3E50" />
+            <Frame BackgroundColor="White" Padding="10" BorderColor="#BDC3C7" CornerRadius="10">
+                <CollectionView ItemsSource="{Binding Products}" SelectionMode="None">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <StackLayout Padding="10" Spacing="10">
+                                <Label Text="{Binding Name}" FontSize="18" TextColor="#2C3E50" />
+                                <Label Text="{Binding Category, StringFormat='Category: {0}'}" FontSize="14" TextColor="#7F8C8D" />
+                                <Label Text="{Binding TotalCalories, StringFormat='Calories: {0} kcal'}"
+                                       FontSize="14" TextColor="#7F8C8D" />
+                            </StackLayout>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </Frame>
+
+            <!-- Other Days Section -->
+            <Label Text="Other Days:"
+                   FontSize="20"
+                   FontAttributes="Bold"
+                   TextColor="#2C3E50" />
+            <Frame BackgroundColor="White" Padding="10" BorderColor="#BDC3C7" CornerRadius="10">
+                <CollectionView ItemsSource="{Binding AllDays}" SelectionMode="None">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <StackLayout Padding="10" Spacing="10">
+                                <Label Text="{Binding Date, StringFormat='{0:MMMM dd, yyyy}'}"
+                                       FontSize="18" TextColor="#2C3E50" />
+                                <Label Text="{Binding Calories, StringFormat='Total Calories: {0} kcal'}"
+                                       FontSize="16" TextColor="#2C3E50" />
+                            </StackLayout>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </Frame>
+
+            <!-- Go Back Button -->
+            <Button Text="Go Back"
+                    Command="{Binding GoBackCommand}"
+                    WidthRequest="250"
+                    HeightRequest="55"
+                    BackgroundColor="#3498DB"
+                    TextColor="White"
+                    FontSize="18"
+                    CornerRadius="30"
+                    HorizontalOptions="Center"
+                    Padding="10"
+                    Margin="10" />
+        </StackLayout>
+    </ScrollView>
+</ContentPage>

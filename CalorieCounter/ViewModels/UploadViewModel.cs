@@ -6,12 +6,14 @@ using System.Threading.Tasks;
 using CalorieCounter.Services;
 using System;
 using System.Windows.Input;
+using CalorieCounter.Models;
 
 namespace CalorieCounter.ViewModels
 {
     public class UploadViewModel : ObservableObject, IUploadViewModel
     {
         private bool isRunning = false;
+        private INavigationService _navigationService;
 
         public bool IsRunning
         {
@@ -66,23 +68,36 @@ namespace CalorieCounter.ViewModels
             get => caloriesEaten;
             set => SetProperty(ref caloriesEaten, value);
         }
+        private Category selectedCategory;
+
+        public Category SelectedCategory
+        {
+            get => selectedCategory;
+            set => SetProperty(ref selectedCategory, value);
+        }
 
         // Commands
         public ICommand PickAndSearchBarcodeCommand { get; set; }
         public ICommand TakeAndSearchBarcodeCommand { get; set; }
         public ICommand UploadImageCommand { get; set; }
         public ICommand CalculateCaloriesCommand { get; set; }
+        public ICommand OpenSummaryCommand { get; set; }
 
-        public UploadViewModel()
+        public UploadViewModel(INavigationService navigationService)
         {
+            _navigationService = navigationService;
+
             BindCommands();
         }
 
         private void BindCommands()
         {
+
             PickAndSearchBarcodeCommand = new AsyncRelayCommand(PickAndSearchBarcode);
             TakeAndSearchBarcodeCommand = new AsyncRelayCommand(TakeAndSearchBarcode);
             UploadImageCommand = new AsyncRelayCommand(UploadImage);
+            OpenSummaryCommand = new AsyncRelayCommand(GoToSummary);
+
         }
 
         private async Task PickAndSearchBarcode()
@@ -100,18 +115,42 @@ namespace CalorieCounter.ViewModels
                     SelectedImageSource = ImageSource.FromFile(photo.FullPath);
 
                     // Ask for the grams eaten via a popup
-                    var result = await Application.Current.MainPage.DisplayPromptAsync("Enter Grams Eaten", "How many grams did you eat?", initialValue: "", keyboard: Keyboard.Numeric);
+                    var gramsResult = await Application.Current.MainPage.DisplayPromptAsync("Enter Grams Eaten", "How many grams did you eat?", initialValue: "", keyboard: Keyboard.Numeric);
 
-                    if (result != null && int.TryParse(result, out int grams))
+                    if (gramsResult != null && int.TryParse(gramsResult, out int grams))
                     {
-                        GramsEaten = result;
-                        await ProcessImage(photo);
+                        GramsEaten = gramsResult;
+
+                        // Now show the category selection popup
+                        var categoryResult = await Application.Current.MainPage.DisplayActionSheet("Select Category", "Cancel", null, Enum.GetNames(typeof(Category)).ToArray());
+
+                        if (categoryResult != null && categoryResult != "Cancel")
+                        {
+                            // Log category result for debugging
+                            Console.WriteLine($"Selected category: {categoryResult}");
+
+                            // Try to parse the selected category
+                            if (Enum.TryParse(categoryResult, out Category parsedCategory))
+                            {
+                                SelectedCategory = parsedCategory;
+                                Calories = $"Category: {SelectedCategory}";
+                            }
+                            else
+                            {
+                                Calories = "Invalid category selected.";
+                            }
+
+                            await ProcessImage(photo);
+                        }
+                        else
+                        {
+                            Calories = "Please select a valid category.";
+                        }
                     }
                     else
                     {
                         Calories = "Please enter a valid number of grams.";
                     }
-
                 }
             }
             catch (Exception ex)
@@ -129,10 +168,51 @@ namespace CalorieCounter.ViewModels
             {
                 if (MediaPicker.Default.IsCaptureSupported)
                 {
+                    // Capture the photo
                     var photo = await MediaPicker.Default.CapturePhotoAsync();
                     if (photo != null)
                     {
-                        await ProcessImage(photo);
+                        // Show the photo preview
+                        SelectedImageSource = ImageSource.FromFile(photo.FullPath);
+
+                        // Ask for the grams eaten via a popup
+                        var gramsResult = await Application.Current.MainPage.DisplayPromptAsync("Enter Grams Eaten", "How many grams did you eat?", initialValue: "", keyboard: Keyboard.Numeric);
+
+                        if (gramsResult != null && int.TryParse(gramsResult, out int grams))
+                        {
+                            GramsEaten = gramsResult;
+
+                            // Now show the category selection popup
+                            var categoryResult = await Application.Current.MainPage.DisplayActionSheet("Select Category", "Cancel", null, Enum.GetNames(typeof(Category)).ToArray());
+
+                            if (categoryResult != null && categoryResult != "Cancel")
+                            {
+                                // Log category result for debugging
+                                Console.WriteLine($"Selected category: {categoryResult}");
+
+                                // Try to parse the selected category
+                                if (Enum.TryParse(categoryResult, out Category parsedCategory))
+                                {
+                                    SelectedCategory = parsedCategory;
+                                    Calories = $"Category: {SelectedCategory}";
+                                }
+                                else
+                                {
+                                    Calories = "Invalid category selected.";
+                                }
+
+                                // Process the captured image
+                                await ProcessImage(photo);
+                            }
+                            else
+                            {
+                                Calories = "Please select a valid category.";
+                            }
+                        }
+                        else
+                        {
+                            Calories = "Please enter a valid number of grams.";
+                        }
                     }
                 }
                 else
@@ -194,12 +274,21 @@ namespace CalorieCounter.ViewModels
                             Calories = $"Calories per 100g: {caloriesPer100gValue}";
 
                             // Now calculate the calories based on grams eaten
-                            
-                            
-                                var totalCalories = (caloriesPer100gValue * int.Parse(GramsEaten)) / 100;
-                                CaloriesEaten = $"{totalCalories}"; // Set the CaloriesEaten
-                            
-                           
+                            var totalCalories = (caloriesPer100gValue * int.Parse(GramsEaten)) / 100;
+                            CaloriesEaten = $"{totalCalories}"; // Set the CaloriesEaten
+
+                            // Prepare the product object
+                            var product = new Product
+                            {
+                                Name = ProductName,
+                                CaloriesPer100g = caloriesPer100gValue,
+                                AmountInGrams = int.Parse(GramsEaten),
+                                Barcode = barcodeNumber,
+                                Category = SelectedCategory // You can categorize the product if needed, e.g., food category
+                            };
+
+                            // Send product data to the API
+                            await ApiService<Product>.PostAsync("Calories", product);  // Assuming the endpoint is "Calories"
                         }
                         else
                         {
@@ -228,6 +317,10 @@ namespace CalorieCounter.ViewModels
             {
                 IsRunning = false;
             }
+        }
+        private async Task GoToSummary()
+        {
+            await _navigationService.NavigateToSummaryPageAsync();
         }
     }
 }

@@ -5,10 +5,12 @@ namespace CalorieCounter.Views
 {
     public partial class UploadPage : ContentPage
     {
-        public UploadPage(UploadViewModel viewModel)
+        public UploadPage(IUploadViewModel viewModel)
         {
             InitializeComponent();
             BindingContext = viewModel;  // Use the passed-in viewModel instance
         }
+        
+
     }
 }
